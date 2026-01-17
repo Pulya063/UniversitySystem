@@ -22,7 +22,7 @@ namespace UniversitySystem.Repositories
             return _zestawDanych.ToList();
         }
 
-        public T PobierzPoId(int id)
+        public T PobierzPoId(int id)          
         {
             return _zestawDanych.Find(id);
         }
