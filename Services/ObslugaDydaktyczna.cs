@@ -42,7 +42,7 @@ namespace UniversitySystem.Services
             var nowaOcena = new Ocena
             {
                 Wartosc = wartosc,
-                DataWystawienia = DateTime.Now,
+                DataWystawienia = DateTime.UtcNow,
                 TypOceny = "Egzamin",
                 StudentID = student.StudentID,
                 PlanZajecID = zajecia.PlanZajecID

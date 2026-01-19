@@ -6,220 +6,230 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace UniversitySystem.Models
 {
     // =============================================
-    // 1. SŁOWNIKI I ZASOBY (Tabele referencyjne)
+    // 1. СЛОВНИКИ ТА РЕСУРСИ
     // =============================================
 
     /// <summary>
-    /// Reprezentuje wydział uczelni (np. Kolegium Informatyki Stosowanej).
+    /// Факультет університету.
     /// </summary>
     public class Wydzial
     {
-        [Key] // Klucz główny
+        [Key]
         public int WydzialID { get; set; }
 
-        public string Nazwa { get; set; } // np. "Wydział Informatyki"
-        public string Dziekan { get; set; } // Imię i nazwisko dziekana
+        [Required, StringLength(100)]
+        public string Nazwa { get; set; } = null!; // Назва факультету
 
-        // Relacja: Jeden wydział ma wiele kierunków
-        public ICollection<Kierunek> Kierunki { get; set; }
+        public string Dziekan { get; set; } = null!; // ПІБ декана
+
+        // Зв'язок: Один факультет — багато напрямів
+        public virtual ICollection<Kierunek> Kierunki { get; set; } = new List<Kierunek>();
     }
 
     /// <summary>
-    /// Reprezentuje kierunek studiów (np. Informatyka, Zarządzanie).
+    /// Напрям навчання (спеціальність).
     /// </summary>
     public class Kierunek
     {
         [Key]
         public int KierunekID { get; set; }
 
-        public string Nazwa { get; set; }
-        public int Stopien { get; set; } // 1 = I stopnia (Licencjat/Inżynier), 2 = II stopnia (Magister)
+        [Required]
+        public string Nazwa { get; set; } = null!;
 
-        // Klucz obcy do Wydziału
+        public int Stopien { get; set; } // 1 = Бакалавр, 2 = Магістр
+
+        // Зв'язок з факультетом
         public int WydzialID { get; set; }
-        public Wydzial Wydzial { get; set; }
+        public virtual Wydzial Wydzial { get; set; } = null!;
 
-        public ICollection<GrupaDziekanska> Grupy { get; set; }
+        public virtual ICollection<GrupaDziekanska> Grupy { get; set; } = new List<GrupaDziekanska>();
+        public virtual ICollection<Przedmiot> Przedmioty { get; set; } = new List<Przedmiot>();
     }
 
     /// <summary>
-    /// Słownik stanowisk pracowników (np. Profesor, Asystent).
+    /// Посади працівників та їх ставки.
     /// </summary>
     public class Stanowisko
     {
         [Key]
         public int StanowiskoID { get; set; }
 
-        public string Nazwa { get; set; }
-        public decimal StawkaGodzinowa { get; set; } // Do obliczania wynagrodzeń
+        public string Nazwa { get; set; } = null!;
+        public decimal StawkaGodzinowa { get; set; } // Оплата за годину
 
-        public ICollection<Pracownik> Pracownicy { get; set; }
+        public virtual ICollection<Pracownik> Pracownicy { get; set; } = new List<Pracownik>();
     }
 
     /// <summary>
-    /// Status studenta w cyklu życia akademickiego (np. Aktywny, Skreślony, Urlop).
+    /// Стутус студента (Активний, Академвідпустка тощо).
     /// </summary>
     public class StatusStudenta
     {
         [Key]
         public int StatusStudentaID { get; set; }
 
-        public string Nazwa { get; set; }
+        public string Nazwa { get; set; } = null!;
 
-        public ICollection<Student> Studenci { get; set; }
+        public virtual ICollection<Student> Studenci { get; set; } = new List<Student>();
     }
 
     /// <summary>
-    /// Sala dydaktyczna.
+    /// Аудиторія для занять.
     /// </summary>
     public class Sala
     {
         [Key]
         public int SalaID { get; set; }
 
-        public string NumerSali { get; set; } // np. "A101"
+        public string NumerSali { get; set; } = null!;
         public int LiczbaMiejsc { get; set; }
-        public bool CzyKomputery { get; set; } // Czy sala posiada sprzęt PC?
+        public bool CzyKomputery { get; set; } // Наявність ПК
 
-        public ICollection<PlanZajec> PlanZajec { get; set; }
+        public virtual ICollection<PlanZajec> PlanZajec { get; set; } = new List<PlanZajec>();
     }
 
     // =============================================
-    // 2. LUDZIE I ORGANIZACJA (Studenci, Pracownicy)
+    // 2. ЛЮДИ ТА ОРГАНІЗАЦІЯ
     // =============================================
 
     /// <summary>
-    /// Grupa studencka przypisana do konkretnego kierunku i roku.
+    /// Студентська група.
     /// </summary>
     public class GrupaDziekanska
     {
         [Key]
         public int GrupaID { get; set; }
 
-        public string KodGrupy { get; set; } // np. "IN.ISP.009"
+        public string KodGrupy { get; set; } = null!; // Напр. "IN-11"
         public int RokStudiow { get; set; }
 
-        // Powiązanie z kierunkiem
+        // Зв'язок з напрямом навчання
         public int KierunekID { get; set; }
-        public Kierunek Kierunek { get; set; }
+        public virtual Kierunek Kierunek { get; set; } = null!;
 
-        public ICollection<Student> Studenci { get; set; }
+        public virtual ICollection<Student> Studenci { get; set; } = new List<Student>();
     }
 
     /// <summary>
-    /// Centralna tabela przechowująca dane studentów.
+    /// Дані студента.
     /// </summary>
     public class Student
     {
         [Key]
         public int StudentID { get; set; }
 
-        public string NrIndeksu { get; set; } // Unikalny numer albumu (np. "w12345")
-        public string Pesel { get; set; }
-        public string Imie { get; set; }
-        public string Nazwisko { get; set; }
+        [Required]
+        public string NrIndeksu { get; set; } = null!; // Номер залікової книжки
+        public string Pesel { get; set; } = null!;
+        public string Imie { get; set; } = null!;
+        public string Nazwisko { get; set; } = null!;
 
-        // Przypisanie do grupy
+        // Група студента
         public int GrupaID { get; set; }
-        public GrupaDziekanska Grupa { get; set; }
+        public virtual GrupaDziekanska Grupa { get; set; } = null!;
 
-        // Przypisanie statusu (np. czy jest aktywny)
+        // Статус навчання
         public int StatusStudentaID { get; set; }
-        public StatusStudenta Status { get; set; }
+        public virtual StatusStudenta Status { get; set; } = null!;
 
-        // Lista ocen studenta
-        public ICollection<Ocena> Oceny { get; set; }
+        public virtual ICollection<Ocena> Oceny { get; set; } = new List<Ocena>();
     }
 
     /// <summary>
-    /// Pracownik uczelni (Wykładowca lub Administracja).
+    /// Викладач або адміністратор.
     /// </summary>
     public class Pracownik
     {
         [Key]
         public int PracownikID { get; set; }
 
-        public string Imie { get; set; }
-        public string Nazwisko { get; set; }
-        public string Email { get; set; }
+        public string Imie { get; set; } = null!;
+        public string Nazwisko { get; set; } = null!;
+        public string Email { get; set; } = null!;
         public DateTime DataZatrudnienia { get; set; }
 
-        // Stanowisko pracownika
+        // Посада
         public int StanowiskoID { get; set; }
-        public Stanowisko Stanowisko { get; set; }
+        public virtual Stanowisko Stanowisko { get; set; } = null!;
 
-        // Lista prowadzonych zajęć
-        public ICollection<PlanZajec> Zajecia { get; set; }
+        public virtual ICollection<PlanZajec> Zajecia { get; set; } = new List<PlanZajec>();
     }
 
     // =============================================
-    // 3. PROCES DYDAKTYCZNY (Przedmioty, Oceny, Plan)
+    // 3. НАВЧАЛЬНИЙ ПРОЦЕС
     // =============================================
 
     /// <summary>
-    /// Przedmiot realizowany w ramach toku studiów (Sylabus).
+    /// Навчальна дисципліна.
     /// </summary>
     public class Przedmiot
     {
         [Key]
         public int PrzedmiotID { get; set; }
 
-        public string Nazwa { get; set; } // np. "Programowanie Obiektowe"
-        public int ECTS { get; set; } // Punkty ECTS
+        public string Nazwa { get; set; } = null!;
+        public int ECTS { get; set; } // Кредити ECTS
         public int Semestr { get; set; }
 
-        public ICollection<PlanZajec> PlanZajec { get; set; }
+        // ВИПРАВЛЕНО: Зв'язок з напрямом навчання зроблено public
+        public int KierunekID { get; set; }
+        public virtual Kierunek Kierunek { get; set; } = null!;
+
+        public virtual ICollection<PlanZajec> PlanZajec { get; set; } = new List<PlanZajec>();
     }
 
     /// <summary>
-    /// Tabela łącząca Wykładowcę, Przedmiot, Grupę i Salę w czasie (Harmonogram).
+    /// Розклад занять (ланка між усіма сутностями).
     /// </summary>
     public class PlanZajec
     {
         [Key]
         public int PlanZajecID { get; set; }
 
-        public int DzienTygodnia { get; set; } // 1 = Poniedziałek, 7 = Niedziela
-        public TimeSpan Godzina { get; set; } // Godzina rozpoczęcia zajęć
+        public int DzienTygodnia { get; set; } // 1-7
 
-        // KTO uczy?
+        // ВИПРАВЛЕНО: Залишено лише уніфіковані поля часу
+        public TimeSpan GodzinaRozpoczecia { get; set; }
+        public TimeSpan GodzinaZakonczenia { get; set; }
+
+        // Викладач
         public int PracownikID { get; set; }
-        public Pracownik Pracownik { get; set; }
+        public virtual Pracownik Pracownik { get; set; } = null!;
 
-        // CZEGO uczy?
+        // Дисципліна
         public int PrzedmiotID { get; set; }
-        public Przedmiot Przedmiot { get; set; }
+        public virtual Przedmiot Przedmiot { get; set; } = null!;
 
-        // KOGO uczy?
+        // Група
         public int GrupaID { get; set; }
-        public GrupaDziekanska Grupa { get; set; }
+        public virtual GrupaDziekanska Grupa { get; set; } = null!;
 
-        // GDZIE uczy?
+        // Аудиторія
         public int SalaID { get; set; }
-        public Sala Sala { get; set; }
+        public virtual Sala Sala { get; set; } = null!;
 
-        // Oceny wystawione w ramach tych zajęć
-        public ICollection<Ocena> Oceny { get; set; }
+        public virtual ICollection<Ocena> Oceny { get; set; } = new List<Ocena>();
     }
 
     /// <summary>
-    /// Elektroniczny dziennik ocen.
+    /// Оцінка студента.
     /// </summary>
     public class Ocena
     {
         [Key]
         public int OcenaID { get; set; }
 
-        public double Wartosc { get; set; } // np. 2.0, 3.0, 3.5, 4.0, 4.5, 5.0
+        public double Wartosc { get; set; } // 2.0 - 5.0
         public DateTime DataWystawienia { get; set; }
-        public string TypOceny { get; set; } // np. "Egzamin", "Kolokwium", "Projekt"
+        public string TypOceny { get; set; } = null!; // "Екзамен", "Проєкт" тощо
 
-        // Czyja to ocena?
+        // Власник оцінки
         public int StudentID { get; set; }
-        public Student Student { get; set; }
+        public virtual Student Student { get; set; } = null!;
 
-        // Z jakich zajęć?
+        // Посилання на конкретне заняття з розкладу
         public int PlanZajecID { get; set; }
-        public PlanZajec Zajecia { get; set; }
+        public virtual PlanZajec Zajecia { get; set; } = null!;
     }
 }
